@@ -1,5 +1,5 @@
 # Fetch-Rewards-Coding-Exercise
-Coding exercise for Fetch Rewards application
+Coding exercise for Fetch Rewards application.
 HTTP web service for handling user requests pertaining to points and points spending.
 Returns point balances when requested. 
 
