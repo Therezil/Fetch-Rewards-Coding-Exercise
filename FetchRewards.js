@@ -52,11 +52,60 @@ function addTransaction() {
 
 function spendPoints() {
     let userText = document.getElementById("userInput2").value;
+    let pointDeductions = [];
+    let date = new Date();
 
     if (userText == "") {
         document.getElementById("output2").innerHTML = "Invalid Input";
     } else {
-        document.getElementById("output2").innerHTML = "Points Spent!";
+        let colIdx = userText.indexOf(":");
+        let pointsSpent = parseInt(userText.slice(colIdx + 1, -1));
+
+        let sortedTransactions = sortTransactions(JSON.parse(JSON.stringify(transactions)));
+        let negativeTransactions = [];
+        
+        for (let i = 0; i < sortedTransactions.length; i++) {
+            if (sortedTransactions[i]["points"] < 0) {
+                negativeTransactions.push(JSON.parse(JSON.stringify(sortedTransactions[i])));
+                sortedTransactions[i]["points"] = 0;
+            }
+        }
+
+        for (let i = 0; i < negativeTransactions.length; i++) {
+            for (let j = 0; j < sortedTransactions.length; j++) {
+                if (negativeTransactions[i]["payer"] == sortedTransactions[j]["payer"] && negativeTransactions[i]["timestamp"] != sortedTransactions[j]["timestamp"] 
+                    && (negativeTransactions[i]["points"] * -1) > sortedTransactions[j]["points"] && sortedTransactions[j]["points"] != 0) {
+                    sortedTransactions[j]["points"] = 0;
+                    negativeTransactions[i]["points"] += sortedTransactions[j]["points"];
+                } else if (negativeTransactions[i]["payer"] == sortedTransactions[j]["payer"] && negativeTransactions[i]["timestamp"] != sortedTransactions[j]["timestamp"]
+                    && sortedTransactions[j]["points"] != 0) {
+                    sortedTransactions[j]["points"] += negativeTransactions[i]["points"];
+                    negativeTransactions[i]["points"] = 0;
+                }
+            }
+        }
+
+        for (let i = 0; i < sortedTransactions.length; i++) {
+            if (pointsSpent > sortedTransactions[i]["points"] && sortedTransactions[i]["points"] > 0) {
+                pointsSpent -= sortedTransactions[i]["points"];
+                let temp = {"payer" : sortedTransactions[i]["payer"], "points" : (sortedTransactions[i]["points"] * -1)};
+                pointDeductions.push(temp);
+                temp["timestamp"] = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + "T" 
+                    + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "Z";
+                transactions.push(temp);
+                sortedTransactions[i]["points"] = 0;
+            } else if (pointsSpent != 0 && sortedTransactions[i]["points"] > 0) {
+                let temp = {"payer" : sortedTransactions[i]["payer"], "points" : (pointsSpent * -1)};
+                sortedTransactions[i]["points"] -= pointsSpent;
+                pointsSpent = 0;
+                pointDeductions.push(temp);
+                temp["timestamp"] = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + "T" 
+                    + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "Z";
+                transactions.push(temp);
+            }
+        }
+
+        document.getElementById("output2").innerHTML = JSON.stringify(pointDeductions);
     }
 }
 
@@ -78,4 +127,49 @@ function returnBalances() {
 
     // Display final balances
     document.getElementById("output3").innerHTML = JSON.stringify(pointBalances);
+}
+
+/**
+ * Quick sort method used from https://gist.github.com/Rajatm544/52ae92ae7fb6d91fd0bb6aece31fef27#file-quicksort-js
+ * Adapted to sort based on timestamp
+ * 
+ * @param {array of transactions to be sorted} sortedTransactions 
+ * @param {left partition} left 
+ * @param {right partition} right 
+ * @returns 
+ */
+function sortTransactions(sortedTransactions, left = 0, right = sortedTransactions.length - 1) {
+    if (left < right) {
+        let pivotIdx = quickSort(sortedTransactions, left, right);
+
+        sortTransactions(sortedTransactions, left, pivotIdx - 1);
+
+        sortTransactions(sortedTransactions, pivotIdx + 1, right);
+    }
+
+    return sortedTransactions;
+}
+
+/**
+ * Quick Sort method used from https://gist.github.com/Rajatm544/52ae92ae7fb6d91fd0bb6aece31fef27#file-quicksort-js 
+ * Adapted to sort based on timestamp
+ * 
+ * @param {array to be sorted} array 
+ * @param {start index} start 
+ * @param {end index} end 
+ */
+function quickSort(array, start = 0, end = array.length - 1) {
+    let pivot = array[start]["timestamp"];
+    let swapIdx = start;
+
+    for (let i = start + 1; i <= end; i++) {
+        if (array[i]["timestamp"] < pivot) {
+            swapIdx++;
+            [array[i], array[swapIdx]] = [array[swapIdx], array[i]];
+        }
+    }
+
+    [array[swapIdx], array[start]] = [array[start], array[swapIdx]];
+
+    return swapIdx;
 }
