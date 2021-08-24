@@ -1,16 +1,22 @@
+<!-- HTML document for Fetch rewards programming challenge 
+    Author: Jakob Paquette -->
 <html>
     <body>
+        <!-- User input to add transactions to system -->
         <input type = "text" id = "userInput1"><br>
         <button type = "button" onclick = "addTransaction()">Add Transaction</button><br>
         <p id = "output1"></p>
 
+        <!-- User input to redeem points-->
         <input type = "text" id = "userInput2"><br>
         <button type = "button" onclick = "spendPoints()">Spend Points</button><br>
         <p id = "output2"></p>
 
+        <!-- User input to see remaining balances-->
         <button type = "button" onclick = "returnBalances()">Return Balances</button><br>
         <p id = "output3"></p>
 
+        <!-- JavaScript that drives backend-->
         <script src = "FetchRewards.js"></script>
     </body>
 </html>

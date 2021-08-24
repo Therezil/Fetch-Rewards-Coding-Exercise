@@ -1,3 +1,7 @@
+/** 
+ *  JavaScript file for Fetch Rewards programming challenge 
+ *  Author: Jakob Paquette
+ */
 const transactions = []; // Array used to store the transactions
 
 function addTransaction() {
