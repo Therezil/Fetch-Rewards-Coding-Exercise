@@ -1,1 +1,0 @@
-This is for the Fetch Rewards Application process.
