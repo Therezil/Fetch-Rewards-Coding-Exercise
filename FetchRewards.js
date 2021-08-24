@@ -12,9 +12,21 @@ function addTransaction() {
 }
 
 function spendPoints() {
-    document.getElementById("output2").innerHTML = "11";
+    let userText = document.getElementById("userInput2").value;
+
+    if (userText == "") {
+        document.getElementById("output2").innerHTML = "Invalid Input"
+    } else {
+        document.getElementById("output2").innerHTML = "Points Spent!"
+    }
 }
 
 function returnBalances() {
-    document.getElementById("output3").innerHTML = "11";
+    let userText = document.getElementById("userInput3").value;
+
+    if (userText == "") {
+        document.getElementById("output3").innerHTML = "Invalid Transaction"
+    } else {
+        document.getElementById("output3").innerHTML = "Transaction Added!"
+    }
 }
