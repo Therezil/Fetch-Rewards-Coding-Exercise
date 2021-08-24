@@ -14,14 +14,14 @@ function addTransaction() {
             if (userText[i] == ',') {
                 let temp = userText.slice(j, i);
                 j = i + 1;
-                
+
                 // Adding the payer section
                 if (temp.includes("payer")) {
                     let colIdx = temp.indexOf(":");
                     let name = temp.slice(colIdx + 3, -1);
                     transaction["payer"] = name;
-                } 
-                
+                }  
+
                 // Adding the points section
                 else {
                     let colIdx = temp.indexOf(":");
@@ -29,7 +29,7 @@ function addTransaction() {
                     transaction["points"] = pointsValue;
                 }
             } 
-            
+
             // Adding the timestamp section
             else if (i == userText.length - 1) {
                 let temp = userText.slice(j, i);
@@ -41,7 +41,7 @@ function addTransaction() {
         }
 
         // Push the transaction into the array and let the user know the transaction has been added
-        transactions.push(JSON.stringify(transaction));
+        transactions.push(transaction);
         document.getElementById("output1").innerHTML = "Transaction Added!";
     }
 }
@@ -57,11 +57,21 @@ function spendPoints() {
 }
 
 function returnBalances() {
-    let userText = document.getElementById("userInput3").value;
+    let pointBalances = {};
 
-    if (userText == "") {
-        document.getElementById("output3").innerHTML = "Invalid Transaction";
-    } else {
-        document.getElementById("output3").innerHTML = "Transaction Added!";
+    // Loop through transactions and add up points
+    for (let i = 0; i < transactions.length; i++) {
+        // If the name is already in pointBalances just add it
+        if (transactions[i]["payer"] in pointBalances) {
+            pointBalances[transactions[i]["payer"]] += transactions[i]["points"];
+        } 
+        
+        // Else add the name to pointBalances
+        else {
+            pointBalances[transactions[i]["payer"]] = transactions[i]["points"];
+        }
     }
+
+    // Display final balances
+    document.getElementById("output3").innerHTML = JSON.stringify(pointBalances);
 }
