@@ -4,6 +4,9 @@
  */
 const transactions = []; // Array used to store the transactions
 
+/**
+ *  Adds a transaction to the transactions array
+ */
 function addTransaction() {
     let userText = document.getElementById("userInput1").value;  // Get the transaction to be added
 
@@ -50,20 +53,30 @@ function addTransaction() {
     }
 }
 
+/**
+ *  Spends points redeemed and adds points spent to transaction array
+ */
 function spendPoints() {
     let userText = document.getElementById("userInput2").value;
     let pointDeductions = [];
     let date = new Date();
 
+    // Check to make sure user input is not empty
     if (userText == "") {
         document.getElementById("output2").innerHTML = "Invalid Input";
-    } else {
+    } 
+    
+    // Redeems points that want to be spent
+    else {
+        // Gets amount of points to be spent
         let colIdx = userText.indexOf(":");
         let pointsSpent = parseInt(userText.slice(colIdx + 1, -1));
 
+        // Gets array of transactions sorted by timestamp. Oldest first
         let sortedTransactions = sortTransactions(JSON.parse(JSON.stringify(transactions)));
         let negativeTransactions = [];
         
+        // Gets negative transactions from sorted array to adjust current balance amounts
         for (let i = 0; i < sortedTransactions.length; i++) {
             if (sortedTransactions[i]["points"] < 0) {
                 negativeTransactions.push(JSON.parse(JSON.stringify(sortedTransactions[i])));
@@ -71,13 +84,20 @@ function spendPoints() {
             }
         }
 
+        // Updates current points amount in sorted array
         for (let i = 0; i < negativeTransactions.length; i++) {
             for (let j = 0; j < sortedTransactions.length; j++) {
+                // Checks to make sure that current points to be adjusted is not the same transaction in the sorted list as the negative list.
+                // Also checks to see if points to be updated is greater than points in current transaction and removes the points from
+                // the current transaction if it is.
                 if (negativeTransactions[i]["payer"] == sortedTransactions[j]["payer"] && negativeTransactions[i]["timestamp"] != sortedTransactions[j]["timestamp"] 
                     && (negativeTransactions[i]["points"] * -1) > sortedTransactions[j]["points"] && sortedTransactions[j]["points"] != 0) {
                     sortedTransactions[j]["points"] = 0;
                     negativeTransactions[i]["points"] += sortedTransactions[j]["points"];
-                } else if (negativeTransactions[i]["payer"] == sortedTransactions[j]["payer"] && negativeTransactions[i]["timestamp"] != sortedTransactions[j]["timestamp"]
+                } 
+                // If the amount of points to be removed from current points is less than current points than it updates current points with correct value.
+                // Also checks that they are not the same transaction.
+                else if (negativeTransactions[i]["payer"] == sortedTransactions[j]["payer"] && negativeTransactions[i]["timestamp"] != sortedTransactions[j]["timestamp"]
                     && sortedTransactions[j]["points"] != 0) {
                     sortedTransactions[j]["points"] += negativeTransactions[i]["points"];
                     negativeTransactions[i]["points"] = 0;
@@ -85,23 +105,36 @@ function spendPoints() {
             }
         }
 
+        // Removes points from current transactions based on amount to be redeemed and adds transactions to transaction list
         for (let i = 0; i < sortedTransactions.length; i++) {
+            // If points to be redeemed is greater than amount of points in current transaction than sets points in transaction to 0
+            // and continues to remove points from later transactions.
             if (pointsSpent > sortedTransactions[i]["points"] && sortedTransactions[i]["points"] > 0) {
                 pointsSpent -= sortedTransactions[i]["points"];
                 let temp = {"payer" : sortedTransactions[i]["payer"], "points" : (sortedTransactions[i]["points"] * -1)};
                 pointDeductions.push(temp);
+                // Adds negative transaction of redeemed points to overall transaction list
                 temp["timestamp"] = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + "T" 
                     + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "Z";
                 transactions.push(temp);
                 sortedTransactions[i]["points"] = 0;
-            } else if (pointsSpent != 0 && sortedTransactions[i]["points"] > 0) {
+            } 
+            // If points to be redeemed is less than or equal to amount of points in current transaction then sets points to be redeemed to 0
+            // and updates current points to correct value.
+            else if (pointsSpent != 0 && sortedTransactions[i]["points"] > 0) {
                 let temp = {"payer" : sortedTransactions[i]["payer"], "points" : (pointsSpent * -1)};
                 sortedTransactions[i]["points"] -= pointsSpent;
                 pointsSpent = 0;
                 pointDeductions.push(temp);
+                // Adds negative transaction of redeemed points to overall transaction list
                 temp["timestamp"] = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + "T" 
                     + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "Z";
                 transactions.push(temp);
+            }
+
+            // If all points have been redeemed then exit the loop
+            if (pointsSpent == 0) {
+                break;
             }
         }
 
@@ -109,6 +142,9 @@ function spendPoints() {
     }
 }
 
+/**
+ *  Returns current balances for all payers in transaction array
+ */
 function returnBalances() {
     let pointBalances = {};
 
